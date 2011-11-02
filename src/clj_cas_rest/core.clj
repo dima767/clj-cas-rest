@@ -1,53 +1,40 @@
 (ns clj-cas-rest.core
 	(:require [clj-http.client :as http-client]))
 	
-(def cas-uri "https://cas1.cloudfoundry.com/v1/tickets")
-(def protected-service "http://example.org")	
-	
+(def ^:dynamic *cas-uri*)
 
 (defn- req-tgt-ticket 
-	[]	
+	[username password]	
 	((:headers
 	    (http-client/request
 	      {:method :post
-	       :url cas-uri
+	       :url *cas-uri*
 				 :accept "text/plain"
-	       :form-params {:username "test" :password "test"}}) 
+	       :form-params {:username username :password password}}) 
  	 ) "location")
 )
 
 (defn- tgt-ticket
-	[]
+	[username password]
 	(->
-		(req-tgt-ticket)
+		(req-tgt-ticket username password)
 		(.split "/")
 		(seq)
 		(last)))
 
 (defn- req-st-ticket 
-	[tgt]	
+	[tgt protected-service]	
 	(:body
 	    (http-client/request
 	      {:method :post
-	       :url (str cas-uri "/" tgt)
+	       :url (str *cas-uri* "/" tgt)
 	       :form-params {:service protected-service}}) 
  	 )
 )
 
 (defn get-service-ticket
-	[]
+	[username password service-uri]
 	(->
-		(tgt-ticket)
-		(req-st-ticket)))
-
-
-
-
-
-
-
-
-
-
-		
+		(tgt-ticket username password)
+		(req-st-ticket service-uri)))
 		
