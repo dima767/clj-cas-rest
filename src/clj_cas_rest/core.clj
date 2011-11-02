@@ -1,7 +1,11 @@
 (ns clj-cas-rest.core
 	(:require [clj-http.client :as http-client]))
 	
-(def ^:dynamic *cas-uri*)
+(def ^:dynamic *cas-uri* nil)
+
+(defmacro with-cas [cas-uri & body]
+  `(binding [*cas-uri* ~cas-uri]
+    ~@body))
 
 (defn- req-tgt-ticket 
 	[username password]	
